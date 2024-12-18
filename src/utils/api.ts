@@ -7,4 +7,20 @@ const api = axios.create({
   },
 });
 
+// Fungsi untuk mengambil events
+export const fetchEvents = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/events', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
+};
+
 export default api;
