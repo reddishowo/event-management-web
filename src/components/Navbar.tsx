@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -9,38 +8,37 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <Image 
-                src="/event-logo.svg" 
-                alt="Event Management Logo" 
-                width={120} 
-                height={32}
+              <Image
+                src="/images/evenity2.png"
+                alt="Evenity Logo"
+                width={140}
+                height={40}
+                style={{ 
+                  objectFit: 'contain', 
+                  maxHeight: '40px', 
+                  width: 'auto' 
+                }}
                 className="dark:invert"
               />
             </Link>
             <div className="ml-10 flex items-baseline space-x-4">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Home
               </Link>
-              <Link 
-                href="/events" 
-                className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Events
-              </Link>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link 
-              href="/auth/Login" 
+            <Link
+              href="/auth/Login"
               className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-300"
             >
               Login
             </Link>
-            <Link 
-              href="/auth/Register" 
+            <Link
+              href="/auth/Register"
               className="border border-blue-600 text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-50 transition duration-300"
             >
               Register
