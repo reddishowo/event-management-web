@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { useRouter } from 'next/router';
+import { Trash2, Edit, LogOut } from 'lucide-react';
 
 interface Event {
   id: number;
@@ -30,23 +31,19 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect if no user is logged in
     if (!user) {
       router.push('/auth/Login');
       return;
     }
   
-    // Redirect non-admin users
     if (!isAdmin) {
       router.push('/dashboard');
       return;
     }
   
-    // Fetch events data for admin
     fetchEvents();
   }, [user, isAdmin, router]);
   
-  // If no user or not an admin, return null
   if (!user || !isAdmin) {
     return null;
   }
@@ -73,18 +70,15 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       if (eventForm.id) {
-        // Update existing event
         await api.put(`/events/${eventForm.id}`, eventForm, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
       } else {
-        // Create new event
         await api.post('/events', eventForm, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
       }
       
-      // Reset form and refresh events
       setEventForm({
         id: 0,
         title: '',
@@ -113,118 +107,142 @@ export default function AdminPage() {
     }
   };
 
-  // If not an admin, don't render anything
-  if (!isAdmin) {
-    return null;
-  }
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl mb-4">Admin Event Management</h1>
-      <button
-        onClick={logout}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-4"
-      >
-        Logout
-      </button>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
+        <div className="bg-indigo-600 text-white p-6 flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Admin Event Management</h1>
+          <button
+            onClick={logout}
+            className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            <LogOut className="mr-2" /> Logout
+          </button>
+        </div>
 
-      <h2 className="text-xl mb-4">Create / Update Event</h2>
-      <form onSubmit={handleSubmitEvent} className="mb-6">
-        <input
-          type="text"
-          name="title"
-          value={eventForm.title}
-          onChange={handleInputChange}
-          placeholder="Event Title"
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <textarea
-          name="description"
-          value={eventForm.description}
-          onChange={handleInputChange}
-          placeholder="Event Description"
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <input
-          type="datetime-local"
-          name="start_date"
-          value={eventForm.start_date}
-          onChange={handleInputChange}
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <input
-          type="datetime-local"
-          name="end_date"
-          value={eventForm.end_date}
-          onChange={handleInputChange}
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <input
-          type="text"
-          name="location"
-          value={eventForm.location}
-          onChange={handleInputChange}
-          placeholder="Event Location"
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <input
-          type="number"
-          name="max_participants"
-          value={eventForm.max_participants}
-          onChange={handleInputChange}
-          placeholder="Max Participants"
-          className="border p-2 w-full mb-2"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          {eventForm.id ? 'Update Event' : 'Create Event'}
-        </button>
-      </form>
+        <div className="p-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Create / Update Event</h2>
+          <form onSubmit={handleSubmitEvent} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                name="title"
+                value={eventForm.title}
+                onChange={handleInputChange}
+                placeholder="Event Title"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+              <input
+                type="text"
+                name="location"
+                value={eventForm.location}
+                onChange={handleInputChange}
+                placeholder="Event Location"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
 
-      <h2 className="text-xl mb-4">Event List</h2>
-      {isLoading ? (
-        <p>Loading events...</p>
-      ) : (
-        <table className="w-full table-auto border-collapse border">
-          <thead>
-            <tr>
-              <th className="border p-2">Title</th>
-              <th className="border p-2">Start Date</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map(event => (
-              <tr key={event.id}>
-                <td className="border p-2">{event.title}</td>
-                <td className="border p-2">{event.start_date}</td>
-                <td className="border p-2">
-                  <button
-                    onClick={() => setEventForm(event)}
-                    className="bg-yellow-500 text-white px-4 py-2 mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteEvent(event.id)}
-                    className="bg-red-500 text-white px-4 py-2"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            <textarea
+              name="description"
+              value={eventForm.description}
+              onChange={handleInputChange}
+              placeholder="Event Description"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[100px]"
+              required
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input
+                  type="datetime-local"
+                  name="start_date"
+                  value={eventForm.start_date}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <input
+                  type="datetime-local"
+                  name="end_date"
+                  value={eventForm.end_date}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
+              <input
+                type="number"
+                name="max_participants"
+                value={eventForm.max_participants}
+                onChange={handleInputChange}
+                placeholder="Max Participants"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-md transition-colors"
+            >
+              {eventForm.id ? 'Update Event' : 'Create Event'}
+            </button>
+          </form>
+        </div>
+
+        <div className="p-6 bg-gray-50">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Event List</h2>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Loading events...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white shadow rounded-lg overflow-hidden">
+                <thead className="bg-indigo-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {events.map(event => (
+                    <tr key={event.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap">{event.title}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{event.start_date}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <button
+                          onClick={() => setEventForm(event)}
+                          className="text-yellow-600 hover:text-yellow-800 mr-4"
+                        >
+                          <Edit />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
