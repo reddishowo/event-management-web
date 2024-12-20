@@ -62,7 +62,6 @@ export default function Dashboard() {
     { icon: <FiGrid className="w-5 h-5" />, title: 'Overview', link: '/dashboard' },
     { icon: <FiCalendar className="w-5 h-5" />, title: 'Events', link: '/dashboard/events' },
     { icon: <FiUser className="w-5 h-5" />, title: 'Profile', link: '/dashboard/profile' },
-    { icon: <FiSettings className="w-5 h-5" />, title: 'Settings', link: '/dashboard/settings' },
   ];
 
   // Format date function

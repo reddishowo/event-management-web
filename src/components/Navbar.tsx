@@ -8,18 +8,6 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <Image
-                src="/images/evenity2.png"
-                alt="Evenity Logo"
-                width={140}
-                height={40}
-                style={{ 
-                  objectFit: 'contain', 
-                  maxHeight: '40px', 
-                  width: 'auto' 
-                }}
-                className="dark:invert"
-              />
             </Link>
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
