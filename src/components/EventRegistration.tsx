@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, MapPin, Users, CheckCircle, XCircle } from 'lucide-react';
+import api from '../utils/api';
 
 interface Event {
   id: number;
@@ -41,84 +42,61 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({ event
     }
   }, [event]);
 
-  const checkRegistrationStatus = async () => {
-    try {
-      const response = await fetch(`/api/events/${event.id}/check-registration`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setRegistrationStatus({
-        isRegistered: data.registered,
-        isOpen: data.registration_open,
-        currentParticipants: data.current_participants,
-        maxParticipants: data.max_participants
-      });
-    } catch (error) {
-      setError('Failed to check registration status');
-    }
-  };
+const checkRegistrationStatus = async () => {
+  try {
+    const response = await api.get(`/events/${event.id}/check-registration`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    const data = response.data;
+    setRegistrationStatus({
+      isRegistered: data.registered,
+      isOpen: data.registration_open,
+      currentParticipants: data.current_participants,
+      maxParticipants: data.max_participants,
+    });
+  } catch (error) {
+    setError('Failed to check registration status');
+  }
+};
 
-  const handleRegister = async () => {
-    setLoading(true);
-    setError('');
+const handleRegister = async () => {
+  setLoading(true);
+  setError('');
+  try {
+    await api.post(`/events/${event.id}/register`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    await checkRegistrationStatus();
+    onRegistrationUpdate?.();
+  } catch (error: any) {
+    setError(error.response?.data?.message || 'Registration failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      const response = await fetch(`/api/events/${event.id}/register`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+const handleCancel = async () => {
+  setLoading(true);
+  setError('');
+  try {
+    await api.post(`/events/${event.id}/cancel`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    await checkRegistrationStatus();
+    onRegistrationUpdate?.();
+  } catch (error: any) {
+    setError(error.response?.data?.message || 'Cancellation failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      await checkRegistrationStatus();
-      onRegistrationUpdate?.();
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('An unexpected error occurred');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch(`/api/events/${event.id}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Cancellation failed');
-      }
-
-      await checkRegistrationStatus();
-      onRegistrationUpdate?.();
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('An unexpected error occurred');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!event) return null;
 
