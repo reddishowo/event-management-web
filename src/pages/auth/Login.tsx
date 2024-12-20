@@ -117,7 +117,7 @@ export default function Login() {
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">
               Don't have an account?{' '}
-              <a href="/signup" className="text-primary hover:underline">
+              <a href="/auth/Register" className="text-primary hover:underline">
                 Sign up
               </a>
             </span>

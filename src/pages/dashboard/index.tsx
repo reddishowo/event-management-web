@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FiCalendar, FiUser, FiLogOut, FiGrid, FiSettings, FiBell, FiMapPin, FiInfo } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiLogOut, FiGrid, FiSettings, FiBell, FiMapPin, FiInfo, FiCast } from 'react-icons/fi';
 import { fetchEvents } from '../../utils/api';
 import {
   Dialog,
@@ -71,7 +71,9 @@ export default function Dashboard() {
   const menuItems = [
     { icon: <FiGrid className="w-5 h-5" />, title: 'Overview', link: '/dashboard' },
     { icon: <FiCalendar className="w-5 h-5" />, title: 'Events', link: '/dashboard/events' },
+    { icon: <FiCast className="w-5 h-5" />, title: 'Tickets', link: '/dashboard/tickets' },
     { icon: <FiUser className="w-5 h-5" />, title: 'Profile', link: '/dashboard/profile' },
+    
   ];
 
   const formatDate = (dateString: string) => {

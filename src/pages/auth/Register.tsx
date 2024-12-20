@@ -165,7 +165,7 @@ export default function Register() {
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">
               Already have an account?{' '}
-              <a href="/login" className="text-primary hover:underline">
+              <a href="/auth/Login" className="text-primary hover:underline">
                 Sign in
               </a>
             </span>
