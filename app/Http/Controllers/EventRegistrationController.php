@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Ticket;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -47,15 +49,31 @@ class EventRegistrationController extends Controller
         }
 
         try {
+            // Begin transaction
+            \DB::beginTransaction();
+
+            // Register user for event
             $event->participants()->attach($user->id, [
                 'status' => 'registered'
             ]);
 
+            // Generate ticket
+            $ticket = Ticket::create([
+                'user_id' => $user->id,
+                'event_id' => $event->id,
+                'ticket_code' => $this->generateTicketCode(),
+                'status' => 'active'
+            ]);
+
+            \DB::commit();
+
             return response()->json([
                 'message' => 'Successfully registered for the event',
-                'event' => $event->load('participants')
+                'event' => $event->load('participants'),
+                'ticket' => $ticket
             ]);
         } catch (\Exception $e) {
+            \DB::rollBack();
             return response()->json([
                 'message' => 'Failed to register for the event'
             ], 500);
@@ -73,14 +91,25 @@ class EventRegistrationController extends Controller
         }
 
         try {
+            \DB::beginTransaction();
+
+            // Update registration status
             $event->participants()->updateExistingPivot($user->id, [
                 'status' => 'cancelled'
             ]);
+
+            // Deactivate ticket
+            Ticket::where('user_id', $user->id)
+                  ->where('event_id', $event->id)
+                  ->update(['status' => 'cancelled']);
+
+            \DB::commit();
 
             return response()->json([
                 'message' => 'Registration cancelled successfully'
             ]);
         } catch (\Exception $e) {
+            \DB::rollBack();
             return response()->json([
                 'message' => 'Failed to cancel registration'
             ], 500);
@@ -90,10 +119,34 @@ class EventRegistrationController extends Controller
     public function getRegisteredEvents(): JsonResponse
     {
         $user = auth()->user();
-        $events = $user->registeredEvents()
-                      ->where('status', 'registered')
-                      ->get();
+        
+        $tickets = Ticket::with('event')
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->get()
+            ->map(function ($ticket) {
+                $event = $ticket->event;
+                return [
+                    'id' => $event->id,  // Changed from ticket->id to event->id for compatibility
+                    'title' => $event->title,
+                    'description' => $event->description,
+                    'start_date' => $event->start_date,
+                    'end_date' => $event->end_date,
+                    'location' => $event->location,
+                    'max_participants' => $event->max_participants,
+                    'ticket_code' => $ticket->ticket_code
+                ];
+            });
 
-        return response()->json($events);
+        return response()->json($tickets);
+    }
+
+    private function generateTicketCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(8));
+        } while (Ticket::where('ticket_code', $code)->exists());
+
+        return $code;
     }
 }

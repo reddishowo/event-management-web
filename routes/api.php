@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventRegistrationController;
 
 
@@ -28,9 +29,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/register', [EventRegistrationController::class, 'register']);
     Route::post('/events/{event}/cancel', [EventRegistrationController::class, 'cancelRegistration']);
     Route::get('/user/registered-events', [EventRegistrationController::class, 'getRegisteredEvents']);
+    Route::get('/user/tickets', [EventRegistrationController::class, 'getRegisteredEvents']);
 });
 Route::apiResource('/user/profile', UserController::class);
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
     Route::put('/user/password', [UserController::class, 'updatePassword']);
+});
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
 });
