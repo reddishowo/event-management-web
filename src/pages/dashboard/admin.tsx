@@ -2,7 +2,50 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { useRouter } from 'next/router';
-import { Trash2, Edit, LogOut } from 'lucide-react';
+import { 
+  Trash2, 
+  Edit, 
+  LogOut, 
+  Plus,
+  Calendar,
+  MapPin,
+  Users,
+  Clock
+} from 'lucide-react';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Event {
   id: number;
@@ -18,6 +61,7 @@ export default function AdminPage() {
   const { user, logout, isAdmin } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [eventForm, setEventForm] = useState<Event>({
     id: 0,
     title: '',
@@ -88,6 +132,7 @@ export default function AdminPage() {
         location: '',
         max_participants: 0,
       });
+      setIsOpen(false);
       fetchEvents();
     } catch (error) {
       console.error('Error submitting event:', error);
@@ -107,142 +152,207 @@ export default function AdminPage() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
-        <div className="bg-indigo-600 text-white p-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Admin Event Management</h1>
-          <button
-            onClick={logout}
-            className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            <LogOut className="mr-2" /> Logout
-          </button>
-        </div>
-
-        <div className="p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Create / Update Event</h2>
-          <form onSubmit={handleSubmitEvent} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="title"
-                value={eventForm.title}
-                onChange={handleInputChange}
-                placeholder="Event Title"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-              <input
-                type="text"
-                name="location"
-                value={eventForm.location}
-                onChange={handleInputChange}
-                placeholder="Event Location"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-indigo-600 mr-3" />
+              <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
             </div>
-
-            <textarea
-              name="description"
-              value={eventForm.description}
-              onChange={handleInputChange}
-              placeholder="Event Description"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[100px]"
-              required
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                <input
-                  type="datetime-local"
-                  name="start_date"
-                  value={eventForm.start_date}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                <input
-                  type="datetime-local"
-                  name="end_date"
-                  value={eventForm.end_date}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-500">Welcome, Admin</span>
+              <Button variant="destructive" onClick={logout} className="flex items-center">
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
-              <input
-                type="number"
-                name="max_participants"
-                value={eventForm.max_participants}
-                onChange={handleInputChange}
-                placeholder="Max Participants"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-md transition-colors"
-            >
-              {eventForm.id ? 'Update Event' : 'Create Event'}
-            </button>
-          </form>
-        </div>
-
-        <div className="p-6 bg-gray-50">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Event List</h2>
-          {isLoading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">Loading events...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white shadow rounded-lg overflow-hidden">
-                <thead className="bg-indigo-100">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {events.map(event => (
-                    <tr key={event.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap">{event.title}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">{event.start_date}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <button
-                          onClick={() => setEventForm(event)}
-                          className="text-yellow-600 hover:text-yellow-800 mr-4"
-                        >
-                          <Edit />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          </div>
         </div>
       </div>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-800">Events Overview</h2>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center">
+                <Plus className="mr-2 h-4 w-4" /> Add New Event
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle>{eventForm.id ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+                <DialogDescription>
+                  Fill in the details for your event. Click save when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmitEvent} className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Event Title</Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={eventForm.title}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={eventForm.location}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={eventForm.description}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start_date">Start Date</Label>
+                    <Input
+                      id="start_date"
+                      type="datetime-local"
+                      name="start_date"
+                      value={eventForm.start_date}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end_date">End Date</Label>
+                    <Input
+                      id="end_date"
+                      type="datetime-local"
+                      name="end_date"
+                      value={eventForm.end_date}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="max_participants">Max Participants</Label>
+                  <Input
+                    id="max_participants"
+                    type="number"
+                    name="max_participants"
+                    value={eventForm.max_participants}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-6">
+                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {eventForm.id ? 'Update Event' : 'Create Event'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading events...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map(event => (
+              <Card key={event.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-start">
+                    <span className="text-xl font-semibold">{event.title}</span>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEventForm(event);
+                          setIsOpen(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 text-yellow-600" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{event.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteEvent(event.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </CardTitle>
+                  <CardDescription className="text-sm text-gray-500 line-clamp-2">
+                    {event.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>{formatDate(event.start_date)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="h-4 w-4 mr-2" />
+                      <span>{event.max_participants} participants max</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
