@@ -41,4 +41,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
     ];
+
+    public function registeredEvents()
+    {
+        return $this->belongsToMany(Event::class, 'event_registrations')
+                    ->withTimestamps()
+                    ->withPivot('status');
+    }
 }
