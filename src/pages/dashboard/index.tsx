@@ -181,7 +181,7 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold">
                   {events.filter(event => new Date(event.start_date) > new Date()).length}
                 </div>
-                <p className="text-xs text-gray-500">+2 from last month</p>
+                <p className="text-xs text-gray-500">Stay tuned for exciting moments ahead!</p>
               </CardContent>
             </Card>
 

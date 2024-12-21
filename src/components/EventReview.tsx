@@ -104,7 +104,7 @@ export default function EventReviewSystem({ eventId }: EventReviewProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Event Reviews</h3>
+        <h3 className="text-xl font-semibold">Reviews</h3>
         <div className="flex items-center">
           <span className="mr-2">Average Rating: {averageRating.toFixed(1)}</span>
           <RatingStars 
