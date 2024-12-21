@@ -153,4 +153,59 @@ api.interceptors.request.use(
   }
 );
 
+export interface EventReview {
+    id: number;
+    user_id: number;
+    event_id: number;
+    review: string;
+    rating: number;
+    created_at: string;
+    user?: {
+      id: number;
+      name: string;
+    };
+  }
+  
+  export const submitEventReview = async (eventId: number, data: { review: string; rating: number }) => {
+    try {
+      const response = await api.post(`/events/${eventId}/reviews`, data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      throw error;
+    }
+  };
+  
+  export const fetchEventReviews = async (eventId: number) => {
+    try {
+      const response = await api.get(`/events/${eventId}/reviews`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      throw error;
+    }
+  };
+  
+  export const checkCanReview = async (eventId: number) => {
+    try {
+      const response = await api.get(`/events/${eventId}/can-review`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error checking review status:", error);
+      throw error;
+    }
+  };
+
 export default api;

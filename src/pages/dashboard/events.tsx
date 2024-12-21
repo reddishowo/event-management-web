@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import EventReviewSystem from '@/components/EventReview';
 
 interface Event {
   id: number;
@@ -189,6 +190,7 @@ export default function EventsPage() {
                     event={selectedEvent}
                     onRegistrationUpdate={loadEvents}
                   />
+                  <EventReviewSystem eventId={selectedEvent.id} />
                 </div>
               </>
             )}
