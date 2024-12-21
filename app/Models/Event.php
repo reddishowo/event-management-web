@@ -39,4 +39,13 @@ class Event extends Model
                     ->where('status', 'registered')
                     ->exists();
     }
+    public function reviews()
+    {
+        return $this->hasMany(EventReview::class);
+    }
+    
+    public function averageRating()
+    {
+        return $this->reviews()->avg('rating') ?? 0;
+    }
 }
