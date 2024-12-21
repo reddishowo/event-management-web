@@ -52,6 +52,57 @@ export default function About() {
           </div>
         </section>
 
+        {/* About Eventify Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12 space-y-4">
+              <h2
+                className="text-3xl md:text-4xl font-extrabold text-blue-800"
+                data-aos="fade-down"
+                data-aos-duration="1000"
+              >
+                About Eventify
+              </h2>
+              <p
+                className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto"
+                data-aos="fade-down"
+                data-aos-duration="1000"
+                data-aos-delay="200"
+              >
+                Eventify is your all-in-one solution for event management, designed to streamline every aspect of event planning and execution.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div
+                className="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                data-aos="fade-up"
+                data-aos-duration="1000"
+                data-aos-delay="0"
+              >
+                <h3 className="text-2xl font-bold mb-3 text-blue-800">What is Eventify?</h3>
+                <p className="text-gray-700">
+                  Eventify is a comprehensive event management platform that empowers organizers to create, manage, and promote events of all sizes. From small gatherings to large conferences, Eventify provides the tools you need to succeed.
+                </p>
+              </div>
+              <div
+                className="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                data-aos="fade-up"
+                data-aos-duration="1000"
+                data-aos-delay="100"
+              >
+                <h3 className="text-2xl font-bold mb-3 text-blue-800">Key Benefits</h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
+                  <li>Streamlined event creation and customization</li>
+                  <li>Efficient attendee management and communication</li>
+                  <li>Powerful analytics for event performance tracking</li>
+                  <li>Seamless ticketing and payment processing</li>
+                  <li>Collaborative tools for team coordination</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Our Mission Section */}
         <section className="py-16" id="our-mission">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
