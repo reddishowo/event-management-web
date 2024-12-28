@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, LoaderCircle } from "lucide-react";
+import Link from 'next/link';
 
 type RegisterForm = {
   name: string;
@@ -18,11 +19,11 @@ type RegisterForm = {
 
 export default function Register() {
   const { register: registerUser } = useAuth();
-  const { 
-    register, 
-    handleSubmit, 
-    watch, 
-    formState: { errors } 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors }
   } = useForm<RegisterForm>();
   const router = useRouter();
   const password = watch("password");
@@ -32,13 +33,11 @@ export default function Register() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     setError(null);
-
     if (data.password !== data.confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
-
     try {
       await registerUser(data.name, data.email, data.password);
       router.push('/auth/Login');
@@ -70,11 +69,11 @@ export default function Register() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input 
+              <Input
                 id="name"
                 type="text"
                 placeholder="Enter your name"
-                {...register('name', { 
+                {...register('name', {
                   required: 'Name is required',
                   minLength: {
                     value: 2,
@@ -90,11 +89,11 @@ export default function Register() {
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
+              <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: {
                     value: /\S+@\S+\.\S+/,
@@ -110,11 +109,11 @@ export default function Register() {
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
+              <Input
                 id="password"
                 type="password"
                 placeholder="Enter your password"
-                {...register('password', { 
+                {...register('password', {
                   required: 'Password is required',
                   minLength: {
                     value: 6,
@@ -130,13 +129,13 @@ export default function Register() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input 
+              <Input
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                {...register('confirmPassword', { 
+                {...register('confirmPassword', {
                   required: 'Please confirm your password',
-                  validate: (value) => 
+                  validate: (value) =>
                     value === password || "Passwords do not match"
                 })}
                 className={errors.confirmPassword ? 'border-red-500' : ''}
@@ -146,9 +145,9 @@ export default function Register() {
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full"
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -165,9 +164,9 @@ export default function Register() {
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">
               Already have an account?{' '}
-              <a href="/auth/Login" className="text-primary hover:underline">
+              <Link href="/auth/Login" className="text-primary hover:underline">
                 Sign in
-              </a>
+              </Link>
             </span>
           </div>
         </CardContent>
