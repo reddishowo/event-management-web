@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -109,10 +110,30 @@ export default function Dashboard() {
     }
   };
 
+  const getUpcomingEvents = () => {
+    const now = new Date();
+    return events.filter(event => new Date(event.start_date) > now)
+      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+  };
+
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
+
+  const handleNotificationClick = () => {
+    setIsNotificationModalOpen(true);
+  };
+
+  const getTimeUntilEvent = (startDate: string) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const diffTime = Math.abs(start.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays === 1 ? '1 day' : `${diffDays} days`;
+  };
+
+  const upcomingEvents = getUpcomingEvents();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,11 +144,16 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           </div>
           <div className="flex items-center space-x-6">
-            <button className="p-2 rounded-full hover:bg-gray-100 relative">
+            <button 
+              className="p-2 rounded-full hover:bg-gray-100 relative"
+              onClick={handleNotificationClick}
+            >
               <FiBell className="w-6 h-6 text-gray-600" />
-              <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                {events.filter(event => new Date(event.start_date) > new Date()).length}
-              </span>
+              {upcomingEvents.length > 0 && (
+                <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                  {upcomingEvents.length}
+                </span>
+              )}
             </button>
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
@@ -267,6 +293,58 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+            {/* Notification Modal */}
+            <Dialog open={isNotificationModalOpen} onOpenChange={setIsNotificationModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Upcoming Events Notifications</DialogTitle>
+            <DialogDescription>
+              You have {upcomingEvents.length} upcoming events
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 p-4">
+              {upcomingEvents.length === 0 ? (
+                <p className="text-center text-gray-500">No upcoming events</p>
+              ) : (
+                upcomingEvents.map((event) => (
+                  <Card key={event.id} className="cursor-pointer hover:bg-gray-50" onClick={() => {
+                    setIsNotificationModalOpen(false);
+                    handleEventClick(event);
+                  }}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{event.title}</h4>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Starts in {getTimeUntilEvent(event.start_date)}
+                          </p>
+                          <div className="flex items-center text-sm text-gray-500 mt-2">
+                            <FiMapPin className="w-4 h-4 mr-1" />
+                            {event.location}
+                          </div>
+                        </div>
+                        <Badge className="bg-emerald-100 text-emerald-800">
+                          Upcoming
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                        {event.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+          <div className="flex justify-end space-x-4 mt-4">
+            <Button variant="outline" onClick={() => setIsNotificationModalOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Event Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
