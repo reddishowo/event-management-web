@@ -19,7 +19,8 @@ import {
   KeyRound,
   Shield,
   User,
-  Settings
+  Settings,
+  ArrowLeft
 } from 'lucide-react';
 import { updateProfile, updatePassword } from '../../utils/api';
 
@@ -136,6 +137,14 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center space-x-4 mb-8">
+
+          <button 
+              onClick={() => router.back()}
+               className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+                aria-label="Go back">
+                <ArrowLeft className="h-7 w-7 text-gray-800" />
+          </button>
+
           <div className="bg-blue-500 p-3 rounded-full">
             <Settings className="w-8 h-8 text-white" />
           </div>

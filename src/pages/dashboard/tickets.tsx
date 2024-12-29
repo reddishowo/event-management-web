@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 import api from '../../utils/api';
-import { Calendar, MapPin, Users, Ticket, ArrowRight, RefreshCcw } from 'lucide-react';
+import { Calendar, MapPin, Users, Ticket, ArrowRight, RefreshCcw, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -124,7 +124,17 @@ export default function TicketsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
+            <div className="flex items-center gap-4">
+            <button 
+              onClick={() => router.back()}
+              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-7 w-7 text-gray-800" />
+            </button>
             <h1 className="text-4xl font-bold text-gray-800">My Tickets</h1>
+            </div>
+                
             <p className="text-gray-600 mt-2">Manage your event registrations and tickets</p>
           </div>
           <Button variant="outline" onClick={loadTickets}>
@@ -200,7 +210,7 @@ export default function TicketsPage() {
             {selectedTicket && (
               <>
                 <DialogHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mt-3">
                     <DialogTitle className="text-2xl font-bold">
                       Event Ticket
                     </DialogTitle>

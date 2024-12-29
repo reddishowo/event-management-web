@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 import { fetchEvents } from '../../utils/api';
 import EventRegistrationSystem from '../../components/EventRegistration';
-import { MapPin, Calendar, Users, CheckCircle, X } from 'lucide-react';
+import { MapPin, Calendar, Users, CheckCircle, X, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -106,7 +106,16 @@ export default function EventsPage() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Events</h1>
+          <div className="flex items-center gap-4">
+          <button 
+              onClick={() => router.back()}
+               className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+                aria-label="Go back">
+                <ArrowLeft className="h-7 w-7 text-gray-800" />
+                </button>
+                <h1 className="text-4xl font-bold text-gray-800">Events</h1>
+          </div>
+  
           <Button variant="outline" onClick={loadEvents}>
             <CheckCircle className="w-4 h-4 mr-2" />
             Refresh Events
@@ -157,7 +166,7 @@ export default function EventsPage() {
             {selectedEvent && (
               <>
                 <DialogHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mt-3">
                     <DialogTitle className="text-2xl font-bold">
                       {selectedEvent.title}
                     </DialogTitle>
