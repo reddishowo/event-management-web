@@ -15,9 +15,9 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center space-x-2">
               {/* Replace with your logo */}
-              <div className="w-8 h-8 relative">
+              <div className="w-8 h-9 relative">
                 <img
-                  src="/api/placeholder/32/32"
+                  src="/images/evenity-logo.jpg"
                   alt="Logo"
                   className="rounded-md"
                 />
