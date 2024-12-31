@@ -30,7 +30,15 @@ interface Event {
   end_date: string;
   location: string;
   max_participants: number;
+  category: string;
 }
+
+const categories = [
+  "Leisure event",
+  "Personal event",
+  "Cultural event",
+  "Organizational event",
+];
 
 export default function EventsPage() {
   const { user } = useAuth();
@@ -40,6 +48,7 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const loadEvents = async () => {
     try {
@@ -87,6 +96,10 @@ export default function EventsPage() {
     setIsModalOpen(true);
   };
 
+  const filteredEvents = selectedCategory
+    ? events.filter(event => event.category === selectedCategory)
+    : events;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
@@ -107,13 +120,13 @@ export default function EventsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-          <button 
+            <button 
               onClick={() => router.back()}
-               className="hover:bg-gray-100 p-2 rounded-full transition-colors"
-                aria-label="Go back">
-                <ArrowLeft className="h-7 w-7 text-gray-800" />
-                </button>
-                <h1 className="text-4xl font-bold text-gray-800">Events</h1>
+              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+              aria-label="Go back">
+              <ArrowLeft className="h-7 w-7 text-gray-800" />
+            </button>
+            <h1 className="text-4xl font-bold text-gray-800">Events</h1>
           </div>
   
           <Button variant="outline" onClick={loadEvents}>
@@ -128,8 +141,21 @@ export default function EventsPage() {
           </div>
         )}
 
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <span className="text-gray-700 font-medium">Filter by category:</span>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(selectedCategory === category ? '' : category)}
+              className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${selectedCategory === category ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400'}`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => {
+          {filteredEvents.map((event) => {
             const status = getEventStatus(event.start_date, event.end_date);
             return (
               <Card 
@@ -153,6 +179,11 @@ export default function EventsPage() {
                     <Users className="w-4 h-4 mr-2 text-gray-500" />
                     <span className="text-sm text-gray-600">
                       Max participants: {event.max_participants}
+                    </span>
+                  </div>
+                  <div className="flex items-center mt-2">
+                    <span className="text-sm text-gray-600">
+                      Category: {event.category}
                     </span>
                   </div>
                 </CardContent>

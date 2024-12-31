@@ -10,7 +10,8 @@ import {
   Calendar,
   MapPin,
   Users,
-  Clock
+  Clock,
+  Tag
 } from 'lucide-react';
 
 import {
@@ -42,10 +43,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+
+type EventCategory = 'Leisure event' | 'Personal event' | 'Cultural event' | 'Organizational event';
+
+const EVENT_CATEGORIES: EventCategory[] = [
+  'Leisure event',
+  'Personal event',
+  'Cultural event',
+  'Organizational event'
+];
 
 interface Event {
   id: number;
@@ -55,7 +73,18 @@ interface Event {
   end_date: string;
   location: string;
   max_participants: number;
+  category: EventCategory;
 }
+
+const getCategoryColor = (category: EventCategory) => {
+  const colors = {
+    'Leisure event': 'text-green-600',
+    'Personal event': 'text-blue-600',
+    'Cultural event': 'text-purple-600',
+    'Organizational event': 'text-orange-600'
+  };
+  return colors[category];
+};
 
 export default function AdminPage() {
   const { user, logout, isAdmin } = useAuth();
@@ -70,6 +99,7 @@ export default function AdminPage() {
     end_date: '',
     location: '',
     max_participants: 0,
+    category: 'Leisure event'
   });
 
   const router = useRouter();
@@ -105,10 +135,21 @@ export default function AdminPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEventForm({ ...eventForm, [name]: value });
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
+    isCategory = false
+  ) => {
+    if (isCategory) {
+      // Jika kategori diubah
+      setEventForm((prevForm) => ({ ...prevForm, category: e as EventCategory }));
+    } else {
+      // Jika input teks diubah
+      const target = e as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+      const { name, value } = target.target;
+      setEventForm((prevForm) => ({ ...prevForm, [name]: value }));
+    }
   };
+  
 
   const handleSubmitEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +172,7 @@ export default function AdminPage() {
         end_date: '',
         location: '',
         max_participants: 0,
+        category: 'Leisure event'
       });
       setIsOpen(false);
       fetchEvents();
@@ -210,14 +252,22 @@ export default function AdminPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      value={eventForm.location}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={eventForm.category}
+                      onValueChange={(value) => handleInputChange(value, true)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EVENT_CATEGORIES.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -257,16 +307,28 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="max_participants">Max Participants</Label>
-                  <Input
-                    id="max_participants"
-                    type="number"
-                    name="max_participants"
-                    value={eventForm.max_participants}
-                    onChange={handleInputChange}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={eventForm.location}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="max_participants">Max Participants</Label>
+                    <Input
+                      id="max_participants"
+                      type="number"
+                      name="max_participants"
+                      value={eventForm.max_participants}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-2 mt-6">
@@ -334,6 +396,10 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
+                    <div className="flex items-center text-sm">
+                      <Tag className={`h-4 w-4 mr-2 ${getCategoryColor(event.category)}`} />
+                      <span className={getCategoryColor(event.category)}>{event.category}</span>
+                    </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Clock className="h-4 w-4 mr-2" />
                       <span>{formatDate(event.start_date)}</span>

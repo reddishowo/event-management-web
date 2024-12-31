@@ -27,6 +27,7 @@ interface Event {
   max_participants: number;
   created_at: string;
   updated_at: string;
+  category: string;
 }
 
 export default function Dashboard() {
@@ -282,6 +283,11 @@ export default function Dashboard() {
                           <div className="flex items-center text-sm">
                             <FiUser className="w-4 h-4 mr-2 text-gray-500" />
                             <span>Max participants: {event.max_participants}</span>
+                          </div>
+                          <div className="flex items-center mt-2">
+                            <span className="text-sm text-gray-600">
+                              Category: {event.category}
+                            </span>
                           </div>
                         </div>
                       </CardContent>
