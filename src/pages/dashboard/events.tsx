@@ -1,9 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useRouter } from 'next/router';
-import { fetchEvents } from '../../utils/api';
-import EventRegistrationSystem from '../../components/EventRegistration';
-import { MapPin, Calendar, Users, CheckCircle, X, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useAuth } from "../../context/AuthContext";
+import EventRegistrationSystem from "../../components/EventRegistration";
+import EventReviewSystem from "@/components/EventReview";
+import {
+  MapPin,
+  Calendar,
+  Users,
+  CheckCircle,
+  X,
+  ArrowLeft,
+  Tag,
+  Clock
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import EventReviewSystem from '@/components/EventReview';
+import { fetchEvents } from "../../utils/api";
 
 interface Event {
   id: number;
@@ -34,6 +43,7 @@ interface Event {
 }
 
 const categories = [
+  "All Events",
   "Leisure event",
   "Personal event",
   "Cultural event",
@@ -48,7 +58,7 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Events");
 
   const loadEvents = async () => {
     try {
@@ -57,7 +67,7 @@ export default function EventsPage() {
       setEvents(fetchedEvents);
     } catch (err) {
       console.error(err);
-      setError('Failed to fetch events');
+      setError("Failed to fetch events");
     } finally {
       setLoading(false);
     }
@@ -65,30 +75,35 @@ export default function EventsPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/auth/Login');
+      router.push("/auth/Login");
       return;
     }
     loadEvents();
   }, [user, router]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
+
+  interface EventsGridProps {
+    filteredEvents: Event[];
+    handleEventSelect: (event: Event) => void;
+  }
 
   const getEventStatus = (startDate: string, endDate: string) => {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
-    if (now < start) return { text: 'Upcoming', variant: 'default' as const };
-    if (now > end) return { text: 'Completed', variant: 'secondary' as const };
-    return { text: 'Ongoing', variant: 'outline' as const };
+
+    if (now < start) return { text: "Upcoming", variant: "default" as const };
+    if (now > end) return { text: "Completed", variant: "secondary" as const };
+    return { text: "Ongoing", variant: "outline" as const };
   };
 
   const handleEventSelect = (event: Event) => {
@@ -96,9 +111,9 @@ export default function EventsPage() {
     setIsModalOpen(true);
   };
 
-  const filteredEvents = selectedCategory
-    ? events.filter(event => event.category === selectedCategory)
-    : events;
+  const filteredEvents = selectedCategory === "All Events"
+    ? events
+    : events.filter((event) => event.category === selectedCategory);
 
   if (loading) {
     return (
@@ -120,15 +135,16 @@ export default function EventsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
               className="hover:bg-gray-100 p-2 rounded-full transition-colors"
-              aria-label="Go back">
+              aria-label="Go back"
+            >
               <ArrowLeft className="h-7 w-7 text-gray-800" />
             </button>
             <h1 className="text-4xl font-bold text-gray-800">Events</h1>
           </div>
-  
+
           <Button variant="outline" onClick={loadEvents}>
             <CheckCircle className="w-4 h-4 mr-2" />
             Refresh Events
@@ -146,8 +162,12 @@ export default function EventsPage() {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(selectedCategory === category ? '' : category)}
-              className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${selectedCategory === category ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400'}`}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
+                selectedCategory === category
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400"
+              }`}
             >
               {category}
             </button>
@@ -158,33 +178,38 @@ export default function EventsPage() {
           {filteredEvents.map((event) => {
             const status = getEventStatus(event.start_date, event.end_date);
             return (
-              <Card 
+              <Card
                 key={event.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                 onClick={() => handleEventSelect(event)}
               >
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl">{event.title}</CardTitle>
+                  <div className="flex justify-between items-start mb-3">
+                    <CardTitle className="text-lg font-semibold">{event.title}</CardTitle>
                     <Badge variant={status.variant}>{status.text}</Badge>
                   </div>
-                  <CardDescription className="flex items-center mt-2">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                    {formatDate(event.start_date)}
+                  <CardDescription className="line-clamp-2 mb-2">
+                    {event.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 line-clamp-2">{event.description}</p>
-                  <div className="flex items-center mt-4">
-                    <Users className="w-4 h-4 mr-2 text-gray-500" />
-                    <span className="text-sm text-gray-600">
-                      Max participants: {event.max_participants}
-                    </span>
-                  </div>
-                  <div className="flex items-center mt-2">
-                    <span className="text-sm text-gray-600">
-                      Category: {event.category}
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{formatDate(event.start_date)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>Max participants: {event.max_participants}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Tag className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{event.category}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -201,8 +226,20 @@ export default function EventsPage() {
                     <DialogTitle className="text-2xl font-bold">
                       {selectedEvent.title}
                     </DialogTitle>
-                    <Badge variant={getEventStatus(selectedEvent.start_date, selectedEvent.end_date).variant}>
-                      {getEventStatus(selectedEvent.start_date, selectedEvent.end_date).text}
+                    <Badge
+                      variant={
+                        getEventStatus(
+                          selectedEvent.start_date,
+                          selectedEvent.end_date
+                        ).variant
+                      }
+                    >
+                      {
+                        getEventStatus(
+                          selectedEvent.start_date,
+                          selectedEvent.end_date
+                        ).text
+                      }
                     </Badge>
                   </div>
                 </DialogHeader>
@@ -212,12 +249,15 @@ export default function EventsPage() {
                     <div className="flex items-center text-gray-700">
                       <Calendar className="w-5 h-5 mr-3 text-primary" />
                       <span>
-                        {formatDate(selectedEvent.start_date)} - {formatDate(selectedEvent.end_date)}
+                        {formatDate(selectedEvent.start_date)} -{" "}
+                        {formatDate(selectedEvent.end_date)}
                       </span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <Users className="w-5 h-5 mr-3 text-primary" />
-                      <span>Maximum participants: {selectedEvent.max_participants}</span>
+                      <span>
+                        Maximum participants: {selectedEvent.max_participants}
+                      </span>
                     </div>
                   </div>
 
@@ -226,7 +266,7 @@ export default function EventsPage() {
                     <p className="text-gray-600">{selectedEvent.description}</p>
                   </div>
 
-                  <EventRegistrationSystem 
+                  <EventRegistrationSystem
                     event={selectedEvent}
                     onRegistrationUpdate={loadEvents}
                   />

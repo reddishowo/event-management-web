@@ -1,9 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { FiCalendar, FiUser, FiLogOut, FiGrid, FiSettings, FiBell, FiMapPin, FiInfo, FiCast } from 'react-icons/fi';
-import { fetchEvents } from '../../utils/api';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { useAuth } from "../../context/AuthContext";
+import {
+  FiCalendar,
+  FiUser,
+  FiLogOut,
+  FiGrid,
+  FiSettings,
+  FiBell,
+  FiMapPin,
+  FiInfo,
+  FiCast,
+  FiTag,
+} from "react-icons/fi";
+import { fetchEvents } from "../../utils/api";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +22,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
 interface Event {
   id: number;
   title: string;
@@ -42,12 +58,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/auth/Login');
+      router.push("/auth/Login");
       return;
     }
-    
+
     if (isAdmin) {
-      router.push('/dashboard/admin');
+      router.push("/dashboard/admin");
       return;
     }
 
@@ -58,7 +74,7 @@ export default function Dashboard() {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError('Failed to fetch events');
+        setError("Failed to fetch events");
         setLoading(false);
       }
     };
@@ -71,20 +87,35 @@ export default function Dashboard() {
   }
 
   const menuItems = [
-    { icon: <FiGrid className="w-5 h-5" />, title: 'Overview', link: '/dashboard' },
-    { icon: <FiCalendar className="w-5 h-5" />, title: 'Events', link: '/dashboard/events' },
-    { icon: <FiCast className="w-5 h-5" />, title: 'Tickets', link: '/dashboard/tickets' },
-    { icon: <FiUser className="w-5 h-5" />, title: 'Profile', link: '/dashboard/profile' },
-    
+    {
+      icon: <FiGrid className="w-5 h-5" />,
+      title: "Overview",
+      link: "/dashboard",
+    },
+    {
+      icon: <FiCalendar className="w-5 h-5" />,
+      title: "Events",
+      link: "/dashboard/events",
+    },
+    {
+      icon: <FiCast className="w-5 h-5" />,
+      title: "Tickets",
+      link: "/dashboard/tickets",
+    },
+    {
+      icon: <FiUser className="w-5 h-5" />,
+      title: "Profile",
+      link: "/dashboard/profile",
+    },
   ];
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -95,26 +126,30 @@ export default function Dashboard() {
 
     if (now < start) {
       return {
-        text: 'Upcoming',
-        className: 'bg-emerald-100 text-emerald-800'
+        text: "Upcoming",
+        className: "bg-emerald-100 text-emerald-800",
       };
     } else if (now > end) {
       return {
-        text: 'Completed',
-        className: 'bg-gray-100 text-gray-800'
+        text: "Completed",
+        className: "bg-gray-100 text-gray-800",
       };
     } else {
       return {
-        text: 'Ongoing',
-        className: 'bg-blue-100 text-blue-800'
+        text: "Ongoing",
+        className: "bg-blue-100 text-blue-800",
       };
     }
   };
 
   const getUpcomingEvents = () => {
     const now = new Date();
-    return events.filter(event => new Date(event.start_date) > now)
-      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+    return events
+      .filter((event) => new Date(event.start_date) > now)
+      .sort(
+        (a, b) =>
+          new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+      );
   };
 
   const handleEventClick = (event: Event) => {
@@ -131,7 +166,7 @@ export default function Dashboard() {
     const start = new Date(startDate);
     const diffTime = Math.abs(start.getTime() - now.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays === 1 ? '1 day' : `${diffDays} days`;
+    return diffDays === 1 ? "1 day" : `${diffDays} days`;
   };
 
   const upcomingEvents = getUpcomingEvents();
@@ -145,7 +180,7 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           </div>
           <div className="flex items-center space-x-6">
-            <button 
+            <button
               className="p-2 rounded-full hover:bg-gray-100 relative"
               onClick={handleNotificationClick}
             >
@@ -161,7 +196,9 @@ export default function Dashboard() {
                 {user?.email?.charAt(0).toUpperCase()}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.email}
+                </p>
                 <p className="text-xs text-gray-500">User</p>
               </div>
             </div>
@@ -198,55 +235,14 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
-                <FiCalendar className="w-5 h-5 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {events.filter(event => new Date(event.start_date) > new Date()).length}
-                </div>
-                <p className="text-xs text-gray-500">Stay tuned for exciting moments ahead!</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Ongoing Events</CardTitle>
-                <FiGrid className="w-5 h-5 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {events.filter(event => {
-                    const now = new Date();
-                    return new Date(event.start_date) <= now && new Date(event.end_date) >= now;
-                  }).length}
-                </div>
-                <p className="text-xs text-gray-500">Active right now</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-                <FiUser className="w-5 h-5 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{events.length}</div>
-                <p className="text-xs text-gray-500">All time events</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Events Cards */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Events List</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Events List
+              </h2>
               <Button variant="outline">View All</Button>
             </div>
-            
+
             {loading ? (
               <div className="text-center py-4">Loading...</div>
             ) : error ? (
@@ -254,17 +250,24 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {events.map((event) => {
-                  const status = getEventStatus(event.start_date, event.end_date);
+                  const status = getEventStatus(
+                    event.start_date,
+                    event.end_date
+                  );
                   return (
-                    <Card 
+                    <Card
                       key={event.id}
                       className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
                       onClick={() => handleEventClick(event)}
                     >
                       <CardHeader>
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{event.title}</CardTitle>
-                          <Badge className={status.className}>{status.text}</Badge>
+                          <CardTitle className="text-lg">
+                            {event.title}
+                          </CardTitle>
+                          <Badge className={status.className}>
+                            {status.text}
+                          </Badge>
                         </div>
                         <CardDescription className="line-clamp-2">
                           {event.description}
@@ -282,12 +285,13 @@ export default function Dashboard() {
                           </div>
                           <div className="flex items-center text-sm">
                             <FiUser className="w-4 h-4 mr-2 text-gray-500" />
-                            <span>Max participants: {event.max_participants}</span>
-                          </div>
-                          <div className="flex items-center mt-2">
-                            <span className="text-sm text-gray-600">
-                              Category: {event.category}
+                            <span>
+                              Max participants: {event.max_participants}
                             </span>
+                          </div>
+                          <div className="flex items-center text-sm">
+                            <FiTag className="w-4 h-4 mr-2 text-gray-500" />
+                            <span>{event.category}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -300,8 +304,11 @@ export default function Dashboard() {
         </main>
       </div>
 
-            {/* Notification Modal */}
-            <Dialog open={isNotificationModalOpen} onOpenChange={setIsNotificationModalOpen}>
+      {/* Notification Modal */}
+      <Dialog
+        open={isNotificationModalOpen}
+        onOpenChange={setIsNotificationModalOpen}
+      >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Upcoming Events Notifications</DialogTitle>
@@ -315,14 +322,20 @@ export default function Dashboard() {
                 <p className="text-center text-gray-500">No upcoming events</p>
               ) : (
                 upcomingEvents.map((event) => (
-                  <Card key={event.id} className="cursor-pointer hover:bg-gray-50" onClick={() => {
-                    setIsNotificationModalOpen(false);
-                    handleEventClick(event);
-                  }}>
+                  <Card
+                    key={event.id}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => {
+                      setIsNotificationModalOpen(false);
+                      handleEventClick(event);
+                    }}
+                  >
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-medium text-gray-900">{event.title}</h4>
+                          <h4 className="font-medium text-gray-900">
+                            {event.title}
+                          </h4>
                           <p className="text-sm text-gray-500 mt-1">
                             Starts in {getTimeUntilEvent(event.start_date)}
                           </p>
@@ -345,7 +358,10 @@ export default function Dashboard() {
             </div>
           </ScrollArea>
           <div className="flex justify-end space-x-4 mt-4">
-            <Button variant="outline" onClick={() => setIsNotificationModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsNotificationModalOpen(false)}
+            >
               Close
             </Button>
           </div>
@@ -359,35 +375,52 @@ export default function Dashboard() {
             <>
               <DialogHeader>
                 <DialogTitle>{selectedEvent.title}</DialogTitle>
-                <DialogDescription>
-                  Event Details
-                </DialogDescription>
+                <DialogDescription>Event Details</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Description</h4>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Description
+                  </h4>
                   <p className="mt-1 text-sm">{selectedEvent.description}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">Start Date</h4>
-                    <p className="mt-1 text-sm">{formatDate(selectedEvent.start_date)}</p>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Start Date
+                    </h4>
+                    <p className="mt-1 text-sm">
+                      {formatDate(selectedEvent.start_date)}
+                    </p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">End Date</h4>
-                    <p className="mt-1 text-sm">{formatDate(selectedEvent.end_date)}</p>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      End Date
+                    </h4>
+                    <p className="mt-1 text-sm">
+                      {formatDate(selectedEvent.end_date)}
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Location</h4>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Location
+                  </h4>
                   <p className="mt-1 text-sm">{selectedEvent.location}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Maximum Participants</h4>
-                  <p className="mt-1 text-sm">{selectedEvent.max_participants}</p>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Maximum Participants
+                  </h4>
+                  <p className="mt-1 text-sm">
+                    {selectedEvent.max_participants}
+                  </p>
                 </div>
                 <div className="flex justify-end space-x-4">
-                  <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
                     Close
                   </Button>
                 </div>
