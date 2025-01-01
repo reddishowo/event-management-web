@@ -9,13 +9,20 @@ class Event extends Model
 {
     //
     protected $fillable = [
-        'title', 'description', 'start_date', 'end_date', 'location', 'max_participants'
+        'title', 'description', 'start_date', 'end_date', 
+        'location', 'max_participants', 'category'
     ];
     
-
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+    ];
+
+    const CATEGORIES = [
+        'Leisure event',
+        'Personal event',
+        'Cultural event',
+        'Organizational event'
     ];
 
     public function participants(): BelongsToMany

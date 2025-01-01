@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('location');
             $table->integer('max_participants');
             $table->timestamps();
+            $table->enum('category', ['Leisure event', 'Personal event', 'Cultural event', 'Organizational event'])->default('Leisure event');
         });
     }
     

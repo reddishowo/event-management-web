@@ -9,7 +9,7 @@ class EventController extends Controller
 {
     public function index()
     {
-        return Event::all(); // Mengambil semua event
+        return Event::all();
     }
 
     public function store(Request $request)
@@ -21,6 +21,7 @@ class EventController extends Controller
             'end_date' => 'required|date|after:start_date',
             'location' => 'required',
             'max_participants' => 'required|integer',
+            'category' => 'required|in:' . implode(',', Event::CATEGORIES),
         ]);
 
         return Event::create($request->all());
@@ -33,6 +34,10 @@ class EventController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'category' => 'sometimes|required|in:' . implode(',', Event::CATEGORIES),
+        ]);
+
         $event = Event::findOrFail($id);
         $event->update($request->all());
         return $event;
@@ -43,5 +48,10 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $event->delete();
         return response()->json(['message' => 'Event deleted successfully']);
+    }
+
+    public function categories()
+    {
+        return response()->json(['categories' => Event::CATEGORIES]);
     }
 }
