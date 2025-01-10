@@ -13,6 +13,8 @@ import {
   FiInfo,
   FiCast,
   FiTag,
+  FiMenu,
+  FiX,
 } from "react-icons/fi";
 import { fetchEvents } from "../../utils/api";
 import {
@@ -33,6 +35,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 interface Event {
   id: number;
   title: string;
@@ -49,6 +59,7 @@ interface Event {
 export default function Dashboard() {
   const { user, logout, isAdmin } = useAuth();
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,13 +184,40 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation Bar */}
-      <nav className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+    <nav className="bg-white border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and Menu Button */}
+          <div className="flex items-center">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 lg:hidden"
+            >
+              {isMenuOpen ? (
+                <FiX className="h-6 w-6" />
+              ) : (
+                <FiMenu className="h-6 w-6" />
+              )}
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900 ml-2">Dashboard</h1>
           </div>
-          <div className="flex items-center space-x-6">
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {menuItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.link}
+                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Notifications and Profile Dropdown */}
+          <div className="flex items-center space-x-4">
             <button
               className="p-2 rounded-full hover:bg-gray-100 relative"
               onClick={handleNotificationClick}
@@ -191,118 +229,120 @@ export default function Dashboard() {
                 </span>
               )}
             </button>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                {user?.email?.charAt(0).toUpperCase()}
-              </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.email}
-                </p>
-                <p className="text-xs text-gray-500">User</p>
-              </div>
-            </div>
+            
+            {/* Profile Dropdown Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <div className="flex items-center space-x-3 cursor-pointer">
+                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden md:block">
+                    <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+                    <p className="text-xs text-gray-500">User</p>
+                  </div>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <Link href="/dashboard/profile">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <FiUser className="w-4 h-4 mr-2" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="cursor-pointer text-red-600 focus:text-red-600" 
+                  onClick={logout}
+                >
+                  <FiLogOut className="w-4 h-4 mr-2" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </nav>
 
-      <div className="flex max-w-7xl mx-auto">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white h-[calc(100vh-73px)] p-6 border-r">
-          <ScrollArea className="h-full">
-            <div className="space-y-6">
-              {menuItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.link}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200"
-                >
-                  {item.icon}
-                  <span className="font-medium">{item.title}</span>
-                </Link>
-              ))}
-              <Separator />
-              <button
-                onClick={logout}
-                className="flex items-center space-x-3 text-red-600 hover:bg-red-50 p-3 rounded-lg transition-all duration-200 w-full"
+        {/* Mobile Menu - Modified to remove logout button since it's now in dropdown */}
+        <div
+          className={`lg:hidden transition-all duration-200 ease-in-out ${
+            isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+          }`}
+        >
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            {menuItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.link}
+                className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
               >
-                <FiLogOut className="w-5 h-5" />
-                <span className="font-medium">Logout</span>
-              </button>
-            </div>
-          </ScrollArea>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Events List
-              </h2>
-              <Button variant="outline">View All</Button>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-4">Loading...</div>
-            ) : error ? (
-              <div className="text-center text-red-500 py-4">{error}</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map((event) => {
-                  const status = getEventStatus(
-                    event.start_date,
-                    event.end_date
-                  );
-                  return (
-                    <Card
-                      key={event.id}
-                      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                      onClick={() => handleEventClick(event)}
-                    >
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">
-                            {event.title}
-                          </CardTitle>
-                          <Badge className={status.className}>
-                            {status.text}
-                          </Badge>
-                        </div>
-                        <CardDescription className="line-clamp-2">
-                          {event.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center text-sm">
-                            <FiCalendar className="w-4 h-4 mr-2 text-gray-500" />
-                            <span>{formatDate(event.start_date)}</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <FiMapPin className="w-4 h-4 mr-2 text-gray-500" />
-                            <span>{event.location}</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <FiUser className="w-4 h-4 mr-2 text-gray-500" />
-                            <span>
-                              Max participants: {event.max_participants}
-                            </span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <FiTag className="w-4 h-4 mr-2 text-gray-500" />
-                            <span>{event.category}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+                {item.icon}
+                <span className="font-medium">{item.title}</span>
+              </Link>
+            ))}
           </div>
-        </main>
+        </div>
       </div>
+    </nav>
+
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl mx-auto p-6">
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Events List</h2>
+          </div>
+
+          {loading ? (
+            <div className="text-center py-4">Loading...</div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-4">{error}</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((event) => {
+                const status = getEventStatus(event.start_date, event.end_date);
+                return (
+                  <Card
+                    key={event.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{event.title}</CardTitle>
+                        <Badge className={status.className}>{status.text}</Badge>
+                      </div>
+                      <CardDescription className="line-clamp-2">
+                        {event.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center text-sm">
+                          <FiCalendar className="w-4 h-4 mr-2 text-gray-500" />
+                          <span>{formatDate(event.start_date)}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <FiMapPin className="w-4 h-4 mr-2 text-gray-500" />
+                          <span>{event.location}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <FiUser className="w-4 h-4 mr-2 text-gray-500" />
+                          <span>Max participants: {event.max_participants}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <FiTag className="w-4 h-4 mr-2 text-gray-500" />
+                          <span>{event.category}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Notification Modal */}
       <Dialog
@@ -367,7 +407,7 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-
+      
       {/* Event Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
