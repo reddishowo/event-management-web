@@ -91,7 +91,7 @@ export default function Services() {
               </div>
               <div className="flex justify-center" data-aos="fade-left">
                 <Image
-                  src="/images/event2.png"
+                  src="/images/services-photo.png"
                   alt="Services Illustration"
                   width={500}
                   height={500}

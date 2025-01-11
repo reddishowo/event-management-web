@@ -32,7 +32,7 @@ export default function Contact() {
               </div>
               <div className="flex justify-center" data-aos="fade-left">
                 <Image
-                  src="/images/about-hero-Photoroom.png"
+                  src="/images/contact-photo.png"
                   alt="Contact Illustration"
                   width={500}
                   height={500}

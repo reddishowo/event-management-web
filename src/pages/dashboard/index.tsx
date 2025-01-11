@@ -203,7 +203,7 @@ export default function Dashboard() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4 pl-35">
             {menuItems.map((item, index) => (
               <Link
                 key={index}
