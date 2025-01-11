@@ -179,11 +179,31 @@ export default function About() {
                 Meet the passionate individuals behind Event Management.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {[
                 {
                   name: 'Farriel Arrianta',
-                  role: 'Backend & Frontend Engineer',
+                  role: 'Backend & Frontend Engineer, and UI/UX Designer',
+                  image: '/images/team/osudefault.png',
+                },
+                {
+                  name: 'Naufal Ghifari Ramadhana',
+                  role: 'Frontend Engineer',
+                  image: '/images/team/osudefault.png',
+                },
+                {
+                  name: 'Nizam Avif Anhari',
+                  role: 'Backend Engineer',
+                  image: '/images/team/osudefault.png',
+                },
+                {
+                  name: 'Muhammad Eka Nur Arief',
+                  role: 'UI/UX Designer',
+                  image: '/images/team/osudefault.png',
+                },
+                {
+                  name: 'Ahmad Naufal Lutfan Marzuqi',
+                  role: 'UI/UX Designer',
                   image: '/images/team/osudefault.png',
                 },
               ].map((member, index) => (
