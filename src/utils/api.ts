@@ -13,7 +13,7 @@ export interface Event {
 
 export interface Ticket extends Event {
   ticket_code: string;
-  status: string;
+  status: 'active' | 'cancelled' | 'expired';
 }
 
 export interface ProfileData {

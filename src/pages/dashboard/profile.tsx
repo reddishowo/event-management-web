@@ -23,6 +23,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { updateProfile, updatePassword } from '../../utils/api';
+import RegisteredEvents from '@/components/RegisteredEvents';
 
 interface ProfileFormData {
   name: string;
@@ -221,7 +222,6 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -327,6 +327,9 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+        <div className="mb-8">
+        </div>
+        <RegisteredEvents />
       </div>
     </div>
   );
