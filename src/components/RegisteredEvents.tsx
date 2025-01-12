@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin, Users, Clock, Ticket } from 'lucide-react';
-import { fetchUserTickets, Ticket as TicketType } from '../utils/api';
+import { fetchEventReviews, fetchUserTickets, Ticket as TicketType } from '../utils/api';
+
 
 interface StatusStyle {
   backgroundColor: string;
@@ -82,6 +83,8 @@ const RegisteredEvents = () => {
         setIsLoading(false);
       }
     };
+
+
 
     loadTickets();
   }, []);
