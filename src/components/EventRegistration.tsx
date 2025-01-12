@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, MapPin, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import api from '../utils/api';
 
-// Interface untuk Event
 interface Event {
   id: number;
   title: string;
@@ -14,7 +22,6 @@ interface Event {
   max_participants: number;
 }
 
-// Interface untuk Status Registrasi
 interface RegistrationStatus {
   isRegistered: boolean;
   isOpen: boolean;
@@ -22,50 +29,41 @@ interface RegistrationStatus {
   maxParticipants: number;
 }
 
-// Interface untuk Props Komponen
 interface EventRegistrationSystemProps {
   event: Event;
   onRegistrationUpdate?: () => void;
 }
 
-// Komponen Utama
 const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({ 
   event, 
   onRegistrationUpdate 
 }) => {
-  // State untuk status registrasi
   const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus>({
     isRegistered: false,
     isOpen: true,
     currentParticipants: 0,
     maxParticipants: 0
   });
-
-  // State untuk loading dan error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-
-  // Mendapatkan informasi user dari context authentication
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  
   const { user } = useAuth();
 
-  // Fungsi untuk memeriksa apakah event sudah berlalu
   const isEventPast = (endDate: string) => {
     const currentDate = new Date();
     const eventEndDate = new Date(endDate);
     return currentDate > eventEndDate;
   };
 
-  // Effect untuk memeriksa status registrasi ketika event berubah
   useEffect(() => {
     if (event) {
       checkRegistrationStatus();
     }
   }, [event]);
 
-  // Fungsi untuk memeriksa status registrasi
   const checkRegistrationStatus = async () => {
     try {
-      // Panggil API untuk mendapatkan status registrasi
       const response = await api.get(`/events/${event.id}/check-registration`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -73,8 +71,6 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
       });
       
       const data = response.data;
-      
-      // Tentukan status registrasi berdasarkan tanggal event
       const isPastEvent = isEventPast(event.end_date);
       
       setRegistrationStatus({
@@ -88,7 +84,6 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
     }
   };
 
-  // Fungsi untuk mendaftarkan event
   const handleRegister = async () => {
     setLoading(true);
     setError('');
@@ -99,11 +94,9 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
         },
       });
       
-      // Perbarui status setelah registrasi
       await checkRegistrationStatus();
-      
-      // Panggil callback jika disediakan
       onRegistrationUpdate?.();
+      setShowConfirmDialog(false);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Registration failed');
     } finally {
@@ -111,7 +104,6 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
     }
   };
 
-  // Fungsi untuk membatalkan registrasi
   const handleCancel = async () => {
     setLoading(true);
     setError('');
@@ -122,10 +114,7 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
         },
       });
       
-      // Perbarui status setelah pembatalan
       await checkRegistrationStatus();
-      
-      // Panggil callback jika disediakan
       onRegistrationUpdate?.();
     } catch (error: any) {
       setError(error.response?.data?.message || 'Cancellation failed');
@@ -134,12 +123,10 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
     }
   };
 
-  // Jika tidak ada event, kembalikan null
   if (!event) return null;
 
   return (
     <div className="space-y-4">
-      {/* Tampilan error */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
           <strong className="font-bold">Error: </strong>
@@ -147,13 +134,10 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
         </div>
       )}
 
-      {/* Kontainer utama event */}
       <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
-        {/* Header event */}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">{event.title}</h3>
           
-          {/* Status event */}
           <span className={`px-3 py-1 rounded-full text-sm ${
             isEventPast(event.end_date) 
               ? 'bg-red-100 text-red-800' 
@@ -169,7 +153,6 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
           </span>
         </div>
 
-        {/* Detail event */}
         <div className="space-y-2 text-sm text-gray-600">
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
@@ -185,9 +168,7 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
           </div>
         </div>
 
-        {/* Tombol aksi */}
         <div className="mt-4">
-          {/* Kondisi tampilan berbeda jika event sudah berlalu */}
           {isEventPast(event.end_date) ? (
             <button
               disabled={true}
@@ -196,7 +177,6 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
               Event Ended
             </button>
           ) : registrationStatus.isRegistered ? (
-            // Tombol batalkan registrasi
             <button
               onClick={handleCancel}
               disabled={loading}
@@ -212,9 +192,8 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
               )}
             </button>
           ) : (
-            // Tombol registrasi
             <button
-              onClick={handleRegister}
+              onClick={() => setShowConfirmDialog(true)}
               disabled={loading || !registrationStatus.isOpen}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center"
             >
@@ -230,6 +209,35 @@ const EventRegistrationSystem: React.FC<EventRegistrationSystemProps> = ({
           )}
         </div>
       </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Confirm Registration
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to register for "{event.title}" event?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRegister}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+            >
+              Confirm Registration
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
