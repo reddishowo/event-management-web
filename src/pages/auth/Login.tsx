@@ -1,43 +1,94 @@
 import { useAuth } from '../../context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
-import { useRouter } from 'next/router';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, LoaderCircle } from "lucide-react";
-import { FcGoogle } from 'react-icons/fc'; // Google Icon
-import { FaGithub } from 'react-icons/fa'; // GitHub Icon
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { LoaderCircle } from "lucide-react";
+import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from 'react-icons/fa';
 import Link from 'next/link';
+import { AxiosError } from 'axios';
 
 type LoginForm = {
   email: string;
   password: string;
 };
 
+type ErrorModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  errorMessage: string;
+};
+
+const ErrorModal = ({ isOpen, onClose, errorMessage }: ErrorModalProps) => (
+  <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Login Failed</AlertDialogTitle>
+        <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogAction onClick={onClose}>Try Again</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 export default function Login() {
   const { login } = useAuth();
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    reset
   } = useForm<LoginForm>();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleErrorModalClose = () => {
+    setIsErrorModalOpen(false);
+    reset({ password: '' }); // Clear only the password field
+  };
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       await login(data.email, data.password);
-      router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      
+      if (error instanceof AxiosError) {
+        const statusCode = error.response?.status;
+        const errorData = error.response?.data;
+    
+        if (statusCode === 401) {
+          // Untuk response 'Invalid credentials'
+          setErrorMessage('Email atau password salah. Silakan coba lagi.');
+        } else if (statusCode === 422) {
+          // Untuk validation errors
+          if (errorData.errors) {
+            // Jika ada multiple validation errors, gabungkan pesannya
+            const errorMessages = Object.values(errorData.errors).flat();
+            setErrorMessage(errorMessages.join('\n'));
+          } else {
+            setErrorMessage(errorData.message || 'Data yang dimasukkan tidak valid.');
+          }
+        } else {
+          setErrorMessage(errorData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
+        }
+      } else if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage('Terjadi kesalahan yang tidak diketahui.');
+      }
+      
+      setIsErrorModalOpen(true);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -52,14 +103,6 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -100,7 +143,6 @@ export default function Login() {
                 <p className="text-red-500 text-sm">{errors.password.message}</p>
               )}
             </div>
-
 
             <Button
               type="submit"
@@ -161,6 +203,12 @@ export default function Login() {
           </div>
         </CardContent>
       </Card>
+
+      <ErrorModal
+        isOpen={isErrorModalOpen}
+        onClose={handleErrorModalClose}
+        errorMessage={errorMessage}
+      />
     </div>
   );
 }
