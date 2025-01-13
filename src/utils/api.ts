@@ -9,6 +9,7 @@ export interface Event {
   end_date: string;
   location: string;
   max_participants: number;
+  event_id : number;
 }
 
 export interface Ticket extends Event {
@@ -190,6 +191,21 @@ export interface EventReview {
       return response.data;
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      throw error;
+    }
+  };
+
+  export const fetchUserReviews = async () => {
+    try {
+      const response = await api.get(`/user/reviews`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      // Match the backend response structure
+      return response.data.status === 'success' ? response.data : { data: [] };
+    } catch (error) {
+      console.error("Error fetching user reviews:", error);
       throw error;
     }
   };

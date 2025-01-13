@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, MapPin, Users, Clock, Ticket } from 'lucide-react';
-import { fetchEventReviews, fetchUserTickets, Ticket as TicketType } from '../utils/api';
+import { Calendar, MapPin, Users, Clock, Ticket, Star } from 'lucide-react';
+import { fetchUserReviews, fetchUserTickets, Ticket as TicketType, EventReview } from '../utils/api';
 
 
 interface StatusStyle {
@@ -11,6 +11,7 @@ interface StatusStyle {
 
 const RegisteredEvents = () => {
   const [tickets, setTickets] = useState<TicketType[]>([]);
+  const [reviewsMap, setReviewsMap] = useState<Map<number, EventReview>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,30 +53,40 @@ const RegisteredEvents = () => {
   };
 
   useEffect(() => {
-    const loadTickets = async () => {
+    const loadData = async () => {
       try {
-        const response = await fetchUserTickets();
-        const ticketData = Array.isArray(response) ? response : 
-                          Array.isArray(response.data) ? response.data : 
+        // Load tickets
+        const ticketResponse = await fetchUserTickets();
+        const ticketData = Array.isArray(ticketResponse) ? ticketResponse : 
+                          Array.isArray(ticketResponse.data) ? ticketResponse.data : 
                           [];
         
-        // Update tickets with calculated status
         const updatedTickets = ticketData.map((ticket: TicketType) => ({
           ...ticket,
           status: getTicketStatus(ticket.end_date, ticket.status)
         }));
         
-        // Sort tickets by date and status
         const sortedTickets = updatedTickets.sort((a: TicketType, b: TicketType) => {
-          // First sort by status (active first)
           if (a.status === 'active' && b.status !== 'active') return -1;
           if (a.status !== 'active' && b.status === 'active') return 1;
-          
-          // Then sort by start date (newest first)
           return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
         });
 
         setTickets(sortedTickets);
+
+        // Load user's reviews
+        const reviewResponse = await fetchUserReviews();
+        const reviewData = Array.isArray(reviewResponse.data) ? reviewResponse.data : [];
+        
+        // Create a map of reviews indexed by event_id
+        const newReviewsMap = new Map<number, EventReview>();
+        reviewData.forEach((review: EventReview) => {
+
+          newReviewsMap.set(review.event_id, review);
+        });
+
+        
+        setReviewsMap(newReviewsMap);
       } catch (err) {
         console.error('Error details:', err);
         setError('Failed to load your registered events');
@@ -84,10 +95,23 @@ const RegisteredEvents = () => {
       }
     };
 
-
-
-    loadTickets();
+    loadData();
   }, []);
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center space-x-1">
+        {[...Array(5)].map((_, index) => (
+          <Star
+            key={index}
+            className={`w-4 h-4 ${
+              index < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -131,6 +155,7 @@ const RegisteredEvents = () => {
             tickets.map((ticket: TicketType) => {
               const currentStatus = getTicketStatus(ticket.end_date, ticket.status);
               const statusStyle = getStatusStyle(currentStatus);
+              const review = reviewsMap.get(ticket.event_id);
               
               return (
                 <div
@@ -164,6 +189,19 @@ const RegisteredEvents = () => {
                           <span>{ticket.max_participants} participants</span>
                         </div>
                       </div>
+                      {review && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center space-x-3">
+                              {renderStars(review.rating)}
+                              <span className="text-xs text-gray-400">
+                                Reviewed on {new Date(review.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">{review.review}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col items-end space-y-2">
                       <div 
