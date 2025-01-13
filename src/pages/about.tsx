@@ -184,27 +184,27 @@ export default function About() {
                 {
                   name: 'Farriel Arrianta',
                   role: 'Backend & Frontend Engineer, and UI/UX Designer',
-                  image: '/images/team/osudefault.png',
+                  image: '/images/team/farriel.jpg',
                 },
                 {
                   name: 'Naufal Ghifari Ramadhana',
                   role: 'Frontend Engineer',
-                  image: '/images/team/osudefault.png',
+                  image: '/images/team/naufalghifari.jpg',
                 },
                 {
                   name: 'Nizam Avif Anhari',
                   role: 'Backend Engineer',
-                  image: '/images/team/osudefault.png',
+                  image: '/images/team/nizam.jpg',
                 },
                 {
                   name: 'Muhammad Eka Nur Arief',
                   role: 'UI/UX Designer',
-                  image: '/images/team/osudefault.png',
+                  image: '/images/team/eka.jpg',
                 },
                 {
                   name: 'Ahmad Naufal Lutfan Marzuqi',
                   role: 'UI/UX Designer',
-                  image: '/images/team/osudefault.png',
+                  image: '/images/team/naufalluthfan.jpg',
                 },
               ].map((member, index) => (
                 <div
