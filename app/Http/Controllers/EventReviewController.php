@@ -113,4 +113,35 @@ class EventReviewController extends Controller
             ], 500);
         }
     }
+
+    public function show(): JsonResponse
+    {
+        try {
+            $reviews = EventReview::with('event')
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->get()
+                ->map(function ($review) {
+                    return [
+                        'id' => $review->id,
+                        'review' => $review->review,
+                        'rating' => $review->rating,
+                        'created_at' => $review->created_at,
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $reviews
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while fetching user reviews',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 }

@@ -42,5 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
     Route::post('/events/{event}/reviews', [EventReviewController::class, 'store']);
     Route::get('/events/{event}/reviews', [EventReviewController::class, 'index']);
+    Route::get('/user/reviews', [EventReviewController::class, 'show']);
     Route::get('/events/{event}/can-review', [EventReviewController::class, 'userCanReview']);
 });
