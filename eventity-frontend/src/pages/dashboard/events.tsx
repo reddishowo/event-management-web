@@ -1,0 +1,282 @@
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useAuth } from "../../context/AuthContext";
+import EventRegistrationSystem from "../../components/EventRegistration";
+import EventReviewSystem from "@/components/EventReview";
+import {
+  MapPin,
+  Calendar,
+  Users,
+  CheckCircle,
+  X,
+  ArrowLeft,
+  Tag,
+  Clock
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { fetchEvents } from "../../utils/api";
+
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  max_participants: number;
+  category: string;
+}
+
+const categories = [
+  "All Events",
+  "Leisure event",
+  "Personal event",
+  "Cultural event",
+  "Organizational event",
+];
+
+export default function EventsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Events");
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const fetchedEvents = await fetchEvents();
+      setEvents(fetchedEvents);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/Login");
+      return;
+    }
+    loadEvents();
+  }, [user, router]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  interface EventsGridProps {
+    filteredEvents: Event[];
+    handleEventSelect: (event: Event) => void;
+  }
+
+  const getEventStatus = (startDate: string, endDate: string) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (now < start) return { text: "Upcoming", variant: "default" as const };
+    if (now > end) return { text: "Completed", variant: "secondary" as const };
+    return { text: "Ongoing", variant: "outline" as const };
+  };
+
+  const handleEventSelect = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const filteredEvents = selectedCategory === "All Events"
+    ? events
+    : events.filter((event) => event.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <Skeleton className="h-12 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-48 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-7 w-7 text-gray-800" />
+            </button>
+            <h1 className="text-4xl font-bold text-gray-800">Events</h1>
+          </div>
+
+          <Button variant="outline" onClick={loadEvents}>
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Refresh Events
+          </Button>
+        </div>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <span className="text-gray-700 font-medium">Filter by category:</span>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
+                selectedCategory === category
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEvents.map((event) => {
+            const status = getEventStatus(event.start_date, event.end_date);
+            return (
+              <Card
+                key={event.id}
+                className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                onClick={() => handleEventSelect(event)}
+              >
+                <CardHeader>
+                  <div className="flex justify-between items-start mb-3">
+                    <CardTitle className="text-lg font-semibold">{event.title}</CardTitle>
+                    <Badge variant={status.variant}>{status.text}</Badge>
+                  </div>
+                  <CardDescription className="line-clamp-2 mb-2">
+                    {event.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{formatDate(event.start_date)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>Max participants: {event.max_participants}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Tag className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{event.category}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-2xl">
+            {selectedEvent && (
+              <>
+                <DialogHeader>
+                  <div className="flex justify-between items-center mt-3">
+                    <DialogTitle className="text-2xl font-bold">
+                      {selectedEvent.title}
+                    </DialogTitle>
+                    <Badge
+                      variant={
+                        getEventStatus(
+                          selectedEvent.start_date,
+                          selectedEvent.end_date
+                        ).variant
+                      }
+                    >
+                      {
+                        getEventStatus(
+                          selectedEvent.start_date,
+                          selectedEvent.end_date
+                        ).text
+                      }
+                    </Badge>
+                  </div>
+                </DialogHeader>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center text-gray-700">
+                      <Calendar className="w-5 h-5 mr-3 text-primary" />
+                      <span>
+                        {formatDate(selectedEvent.start_date)} -{" "}
+                        {formatDate(selectedEvent.end_date)}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-700">
+                      <Users className="w-5 h-5 mr-3 text-primary" />
+                      <span>
+                        Maximum participants: {selectedEvent.max_participants}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Description</h3>
+                    <p className="text-gray-600">{selectedEvent.description}</p>
+                  </div>
+
+                  <EventRegistrationSystem
+                    event={selectedEvent}
+                    onRegistrationUpdate={loadEvents}
+                  />
+                  <EventReviewSystem eventId={selectedEvent.id} />
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
